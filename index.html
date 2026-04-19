@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>2HandBooks - Complete Marketplace with School Ratings</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --admin-bg: #8e44ad; --sold: #e74c3c; --danger: #c0392b; --gold: #f1c40f; --warning: #ff9800; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f6; }
+        nav { background: var(--primary); color: white; padding: 0.8rem 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .nav-logo-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        #app-logo-img { height: 40px; width: auto; display: none; border-radius: 4px; }
+        .container { padding: 20px; max-width: 1400px; margin: auto; min-height: 100vh; }
+        .page { display: none; }
+        .active-page { display: block; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; }
+        button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; background: #e0e0e0; cursor: pointer; border-radius: 8px; font-weight: 600; }
+        .tab.active-tab { background: var(--primary); color: white; }
+        .tab.disabled-tab { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .btn-small { width: auto; padding: 6px 12px; font-size: 0.8rem; }
+        .btn-login { background: var(--gold); color: #2c3e50; width: auto; padding: 8px 20px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; font-weight: bold; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+        .badge-pending { background: #fff3cd; color: #856404; }
+        .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; overflow-x: auto; }
+        .admin-tab-btn { background: transparent; color: #2c3e50; padding: 8px 16px; width: auto; cursor: pointer; border: none; border-radius: 40px; font-size: 0.9rem; white-space: nowrap; }
+        .admin-tab-btn.active-admin-tab { background: var(--primary); color: white; }
+        .admin-tab-content { display: none; }
+        .active-tab-content { display: block; }
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .book-card { text-align: center; transition: transform 0.2s; background: white; position: relative; }
+        .book-card:hover { transform: translateY(-5px); }
+        .book-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; background: #f0f0f0; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: end; }
+        .filter-bar > div { flex: 1; min-width: 150px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 12px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .data-table th { background: #f1f5f9; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-card { background: white; padding: 25px; border-radius: 16px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .add-form { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1100; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .hero-section { background: linear-gradient(135deg, var(--primary) 0%, #1a252f 100%); color: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; text-align: center; }
+        .stats { display: flex; justify-content: center; gap: 40px; margin-top: 20px; flex-wrap: wrap; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: var(--gold); }
+        .user-avatar { width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; }
+        .school-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .school-rating { color: var(--gold); font-size: 1.2rem; margin: 10px 0; }
+        .school-contact { font-size: 0.85rem; color: #666; margin: 5px 0; }
+        .nearby-btn { background: var(--gold); color: #2c3e50; margin-bottom: 20px; }
+        .rating-input { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 10px 0; }
+        .star { font-size: 24px; cursor: pointer; color: #ddd; transition: color 0.2s; }
+        .star:hover, .star.active { color: var(--gold); }
+        .action-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+        .btn-edit { background: #2196F3; }
+        .btn-delete { background: var(--danger); }
+        .btn-toggle { background: var(--warning); color: #000; }
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 0.7rem; }
+        @media (max-width: 700px) { .book-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
+        .school-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo-container" onclick="window.scrollToTop()">
+        <img id="app-logo-img" src="" alt="Logo">
+        <span id="nav-app-name" style="font-size: 1.4rem; font-weight: bold;">2HandBooks</span>
+    </div>
+    <div class="nav-buttons">
+        <div id="user-tools" style="display:none; align-items: center; gap: 15px;">
+            <div class="user-avatar">👤</div>
+            <span id="nav-user-name"></span>
+            <span id="sub-status-badge"></span>
+            <button onclick="window.logout()" style="width:auto; padding: 6px 18px; background: #c0392b;">Logout</button>
+        </div>
+        <button id="login-nav-btn" onclick="window.showLoginModal()" class="btn-login" style="display:flex;">🔐 Login</button>
+        <div id="admin-nav-tools" style="display:none;">
+            <button onclick="window.adminLogout()" style="width:auto; padding: 6px 18px; background: #c0392b;">Admin Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- HERO SECTION -->
+    <div id="hero-section" class="hero-section">
+        <h1>📚 Buy & Sell Second Hand Books</h1>
+        <p>Save money, share knowledge - Connect with students in your area</p>
+        <button onclick="window.showNearbySchools()" class="nearby-btn" style="background: var(--gold); color: #2c3e50; width: auto; margin-top: 10px;">🏫 Find Nearby Schools</button>
+        <div class="stats">
+            <div class="stat"><div class="stat-number" id="total-books-count">0</div><div class="stat-label">Books Available</div></div>
+            <div class="stat"><div class="stat-number" id="total-users-count">0</div><div class="stat-label">Happy Users</div></div>
+            <div class="stat"><div class="stat-number" id="total-schools-count">0</div><div class="stat-label">Schools</div></div>
+        </div>
+        <button onclick="window.scrollToMarketplace()" style="width: auto; margin-top: 20px; background: var(--gold); color: #2c3e50;">Browse Books ↓</button>
+    </div>
+
+    <!-- NEARBY SCHOOLS MODAL -->
+    <div id="nearby-schools-modal" class="modal" style="display:none;">
+        <div class="modal-card">
+            <div style="text-align: right;"><button onclick="window.closeNearbySchoolsModal()" style="width:auto; background:#999; padding:5px 10px;">✕</button></div>
+            <h2 style="text-align:center;">🏫 Nearby Schools</h2>
+            <div id="nearby-schools-list" class="school-grid"></div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="modal" style="display:none;">
+        <div class="modal-card">
+            <div style="text-align: right;"><button onclick="window.closeLoginModal()" style="width:auto; background:#999; padding:5px 10px;">✕</button></div>
+            <h2 id="modal-auth-title" style="text-align:center;">🔐 Login</h2>
+            <input type="text" id="modal-username" placeholder="Username or Email">
+            <input type="password" id="modal-password" placeholder="Password">
+            <div id="modal-reg-fields" style="display:none;">
+                <input type="text" id="modal-regFullName" placeholder="Full Name">
+                <input type="text" id="modal-regMobile" placeholder="Mobile Number">
+                <input type="email" id="modal-regEmail" placeholder="Email Address">
+                <input type="password" id="modal-regPassword" placeholder="Password">
+                <select id="modal-regLocation"><option value="">Select Location</option></select>
+                <select id="modal-regSchool"><option value="">Select School</option></select>
+                <div id="modal-regOtpSection" style="display:none;">
+                    <input type="text" id="modal-regOtp" placeholder="Enter 6-digit OTP">
+                    <button onclick="window.verifyEmailOtp()" style="background: #3498db;">Verify & Register</button>
+                </div>
+            </div>
+            <div id="modal-resetSection" style="display:none;">
+                <input type="email" id="modal-resetEmail" placeholder="Registered Email">
+                <div id="modal-resetOtpSection" style="display:none;">
+                    <input type="text" id="modal-resetOtp" placeholder="Enter OTP">
+                    <input type="password" id="modal-newPassword" placeholder="New Password">
+                    <button onclick="window.completePasswordReset()">Reset Password</button>
+                </div>
+                <button onclick="window.sendResetOtp()" id="modal-sendResetBtn">Send Reset OTP</button>
+            </div>
+            <button onclick="window.processModalAuth()" id="modal-auth-btn">Login</button>
+            <p style="text-align:center; margin-top:15px;">
+                <a href="javascript:void(0)" onclick="window.toggleModalAuthMode()" id="modal-auth-link">Create Account</a> | 
+                <a href="javascript:void(0)" onclick="window.showModalResetPassword()">Forgot Password?</a>
+            </p>
+            <div class="admin-login-link" style="margin-top:15px;text-align:center;">
+                <a href="javascript:void(0)" onclick="window.showAdminLogin()" style="color:var(--admin-bg);">🔧 Admin Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="admin-login-modal" class="modal" style="display:none;">
+        <div class="modal-card">
+            <div style="text-align: right;"><button onclick="window.closeAdminLoginModal()" style="width:auto; background:#999; padding:5px 10px;">✕</button></div>
+            <h2 style="text-align:center; color: var(--admin-bg);">🛡️ Admin Login</h2>
+            <input type="text" id="admin-username" placeholder="Admin Username">
+            <input type="password" id="admin-password" placeholder="Admin Password">
+            <button onclick="window.processAdminLogin()">Login as Admin</button>
+            <p style="text-align:center; margin-top:15px;">
+                <a href="javascript:void(0)" onclick="window.closeAdminLoginModal(); window.showLoginModal()">← Back to User Login</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- RATING MODAL -->
+    <div id="rating-modal" class="modal" style="display:none;">
+        <div class="modal-card">
+            <div style="text-align: right;"><button onclick="window.closeRatingModal()" style="width:auto; background:#999; padding:5px 10px;">✕</button></div>
+            <h2 style="text-align:center;">⭐ Rate School</h2>
+            <input type="hidden" id="rating-school-id">
+            <div id="school-name-display" style="text-align:center; font-size:1.2rem; margin-bottom:15px;"></div>
+            <div class="rating-input" style="justify-content:center;">
+                <span class="star" data-rating="1">★</span>
+                <span class="star" data-rating="2">★</span>
+                <span class="star" data-rating="3">★</span>
+                <span class="star" data-rating="4">★</span>
+                <span class="star" data-rating="5">★</span>
+            </div>
+            <textarea id="rating-review" rows="3" placeholder="Write your review..."></textarea>
+            <button onclick="window.submitSchoolRating()">Submit Rating</button>
+        </div>
+    </div>
+
+    <!-- MARKETPLACE PAGE -->
+    <section id="market-page" class="page active-page">
+        <div class="tab-container">
+            <div class="tab active-tab" onclick="window.switchTab('buy')">📚 Marketplace</div>
+            <div class="tab" id="sell-tab" onclick="window.switchTab('sell')">🏪 My Shop</div>
+            <div class="tab" id="requests-tab" onclick="window.switchTab('requests')">💬 Activity</div>
+            <div class="tab" onclick="window.showNearbySchools()">🏫 Nearby Schools</div>
+        </div>
+        
+        <div id="section-buy">
+            <div class="filter-bar">
+                <div><select id="filterLocation"><option value="">All Locations</option></select></div>
+                <div><select id="filterSchool"><option value="">All Schools</option></select></div>
+                <div><select id="filterCategory"><option value="">All Categories</option></select></div>
+                <div><input type="text" id="filterClass" placeholder="Class"></div>
+                <div><input type="text" id="filterTitle" placeholder="Search by title"></div>
+                <div><button onclick="window.applyFilters()">🔍 Search</button></div>
+            </div>
+            <div id="book-display" class="book-grid"><div class="loading">📚 Loading books...</div></div>
+        </div>
+        
+        <div id="section-sell" style="display:none;">
+            <div id="subscription-warning" style="display:none;" class="subscription-banner">
+                ⚠️ Your subscription has expired or you don't have an active plan.<br>
+                <button onclick="window.showSubscribeModal()">💰 Subscribe Now to Start Selling</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>📤 List a Book</h3>
+                    <input type="text" id="postTitle" placeholder="Book Title">
+                    <input type="text" id="postClass" placeholder="Class">
+                    <select id="postCategory"></select>
+                    <select id="postLocation"></select>
+                    <select id="postSchool"></select>
+                    <input type="number" id="postPrice" placeholder="Price (₹)">
+                    <input type="file" id="postImg" accept="image/*">
+                    <button onclick="window.uploadBook()">📢 Post Book</button>
+                </div>
+                <div class="card">
+                    <h3>📖 My Active Listings</h3>
+                    <div id="my-active-listings"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="section-requests" style="display:none;">
+            <div class="card"><h3>📥 Incoming Requests</h3><div id="incoming-requests"></div></div>
+            <div class="card"><h3>📤 My Sent Requests</h3><div id="outbox"></div></div>
+            <div class="card"><h3>⭐ My Reviews</h3><div id="reviews-section"></div></div>
+        </div>
+    </section>
+
+    <!-- ADMIN PAGE -->
+    <section id="admin-page" class="page">
+        <div class="card" style="background: linear-gradient(135deg, var(--admin-bg) 0%, #6c3483 100%); color: white;">
+            <div class="flex-row"><div><h2>🛡️ Admin Control Hub</h2><p>Complete marketplace management</p></div><button onclick="window.adminLogout()" style="background:#c0392b; width:auto;">Logout</button></div>
+        </div>
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active-admin-tab" data-tab="dashboard">📊 Dashboard</button>
+            <button class="admin-tab-btn" data-tab="locations">📍 Locations</button>
+            <button class="admin-tab-btn" data-tab="schools">🏫 Schools</button>
+            <button class="admin-tab-btn" data-tab="categories">📚 Categories</button>
+            <button class="admin-tab-btn" data-tab="users">👥 Users</button>
+            <button class="admin-tab-btn" data-tab="books">📖 Books</button>
+            <button class="admin-tab-btn" data-tab="requests">📨 Requests</button>
+            <button class="admin-tab-btn" data-tab="subscription">💰 Subscription</button>
+            <button class="admin-tab-btn" data-tab="email">📧 Email</button>
+            <button class="admin-tab-btn" data-tab="brand">🎨 Branding</button>
+        </div>
+        
+        <div id="tab-dashboard" class="admin-tab-content active-tab-content">
+            <div class="card"><h3>📊 Platform Overview</h3><div class="stats" style="margin-top:20px;"><div class="stat"><div class="stat-number" id="admin-total-books">0</div><div class="stat-label">Total Books</div></div><div class="stat"><div class="stat-number" id="admin-total-users">0</div><div class="stat-label">Total Users</div></div><div class="stat"><div class="stat-number" id="admin-total-requests">0</div><div class="stat-label">Total Requests</div></div><div class="stat"><div class="stat-number" id="admin-active-locations">0</div><div class="stat-label">Active Locations</div></div><div class="stat"><div class="stat-number" id="admin-active-schools">0</div><div class="stat-label">Active Schools</div></div><div class="stat"><div class="stat-number" id="admin-active-categories">0</div><div class="stat-label">Active Categories</div></div></div></div>
+        </div>
+        
+        <div id="tab-locations" class="admin-tab-content"><div class="card"><h3>📍 Manage Locations</h3><div class="add-form"><h4>➕ Add New Location</h4><input type="text" id="newLocationName" placeholder="Location Name"><button onclick="window.addLocation()">Add Location</button></div><div id="locationsList"></div></div></div>
+        
+        <div id="tab-schools" class="admin-tab-content"><div class="card"><h3>🏫 Manage Schools</h3><div class="add-form"><h4>➕ Add New School</h4><input type="text" id="newSchoolName" placeholder="School Name"><input type="text" id="newSchoolAddress" placeholder="Address"><input type="text" id="newSchoolWebsite" placeholder="Website"><input type="email" id="newSchoolEmail" placeholder="Email"><input type="text" id="newSchoolPhone" placeholder="Contact Number"><select id="newSchoolLocation"><option value="">Select Location</option></select><button onclick="window.addSchool()">Add School</button></div><div id="schoolsList"></div></div></div>
+        
+        <div id="tab-categories" class="admin-tab-content"><div class="card"><h3>📚 Manage Categories</h3><div class="add-form"><h4>➕ Add New Category</h4><input type="text" id="newCategoryName" placeholder="Category Name"><button onclick="window.addCategory()">Add Category</button></div><div id="categoriesList"></div></div></div>
+        
+        <div id="tab-users" class="admin-tab-content"><div class="card"><div id="usersTableContainer">Loading...</div></div></div>
+        <div id="tab-books" class="admin-tab-content"><div class="card"><div id="adminBooksTableContainer"></div></div></div>
+        <div id="tab-requests" class="admin-tab-content"><div class="card"><div id="adminRequestsTableContainer"></div></div></div>
+        <div id="tab-subscription" class="admin-tab-content"><div class="card"><h3>💰 Subscription Settings</h3><input type="number" id="adminSubPrice" placeholder="Price (₹)" value="199"><input type="number" id="adminSubDays" placeholder="Validity (Days)" value="30"><button onclick="window.updateSubscription()">Update Plan</button><div id="currentPlan"></div></div></div>
+        <div id="tab-email" class="admin-tab-content"><div class="card"><h3>📧 Gmail SMTP Configuration</h3><input type="email" id="smtpEmail" placeholder="Gmail Address"><input type="password" id="smtpPassword" placeholder="App Password"><button onclick="window.saveEmailConfig()">💾 Save Email Settings</button><div id="emailConfigStatus"></div></div></div>
+        <div id="tab-brand" class="admin-tab-content"><div class="card"><h3>🎨 Brand Customization</h3><input type="text" id="setAppName" placeholder="App Name"><input type="text" id="setSupportPhone" placeholder="Support Phone"><input type="email" id="setSupportEmail" placeholder="Support Email"><textarea id="setAddress" rows="2" placeholder="Address"></textarea><input type="text" id="setUpiId" placeholder="UPI ID"><input type="file" id="uploadLogoFile" accept="image/*"><button onclick="window.saveBranding()">Save Branding</button></div></div>
+    </section>
+    
+    <div class="footer-info card" id="footer-info">Loading...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ============================================
+// SUPABASE CONFIGURATION
+// ============================================
+const SUPABASE_URL = 'https://eptgbowkjlepjnuhchqi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwdGdib3dramxlcGpudWhjaHFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDM2MjAsImV4cCI6MjA5MTExOTYyMH0.R4K72dU4rC4gz1hh5nQUCNvENOmEYz5W9u0-ug8bqDQ';
+
+let supabaseClient = null;
+let currentUser = null;
+let authMode = 'login';
+let subscriptionPlan = { price: 199, validity_days: 30 };
+let appConfig = { app_name: '2HandBooks', support_phone: '9876543210', support_email: 'support@2handbooks.com', support_address: '123 Book Street', upi_id: 'yourstore@okhdfcbank', logo: null, smtp_email: '', smtp_password: '' };
+let locations = [], schools = [], categories = [];
+let pendingRegistration = null;
+let pendingReset = null;
+let selectedRating = 0;
+
+// Make functions global
+window.switchTab = switchTab;
+window.showLoginModal = showLoginModal;
+window.closeLoginModal = closeLoginModal;
+window.showAdminLogin = showAdminLogin;
+window.closeAdminLoginModal = closeAdminLoginModal;
+window.processAdminLogin = processAdminLogin;
+window.processModalAuth = processModalAuth;
+window.toggleModalAuthMode = toggleModalAuthMode;
+window.showModalResetPassword = showModalResetPassword;
+window.sendResetOtp = sendResetOtp;
+window.completePasswordReset = completePasswordReset;
+window.verifyEmailOtp = verifyEmailOtp;
+window.logout = logout;
+window.adminLogout = adminLogout;
+window.applyFilters = applyFilters;
+window.uploadBook = uploadBook;
+window.markSold = markSold;
+window.sendRequest = sendRequest;
+window.handleRequest = handleRequest;
+window.updateSubscription = updateSubscription;
+window.showSubscribeModal = showSubscribeModal;
+window.rateUser = rateUser;
+window.saveEmailConfig = saveEmailConfig;
+window.saveBranding = saveBranding;
+window.addLocation = addLocation;
+window.addSchool = addSchool;
+window.addCategory = addCategory;
+window.toggleLocationStatus = toggleLocationStatus;
+window.toggleSchoolStatus = toggleSchoolStatus;
+window.toggleCategoryStatus = toggleCategoryStatus;
+window.deleteLocation = deleteLocation;
+window.deleteSchool = deleteSchool;
+window.deleteCategory = deleteCategory;
+window.editLocation = editLocation;
+window.editSchool = editSchool;
+window.editCategory = editCategory;
+window.scrollToTop = () => window.scrollTo(0, 0);
+window.scrollToMarketplace = () => document.getElementById('market-page').scrollIntoView({ behavior: 'smooth' });
+window.activateSubscription = activateSubscription;
+window.showNearbySchools = showNearbySchools;
+window.closeNearbySchoolsModal = closeNearbySchoolsModal;
+window.rateSchool = rateSchool;
+window.closeRatingModal = closeRatingModal;
+window.submitSchoolRating = submitSchoolRating;
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        await initializeDatabase();
+        await loadMasterData();
+        await loadConfig();
+        await loadSubscriptionPlan();
+        updateDropdowns();
+        
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            const { data: freshUser } = await supabaseClient.from('users').select('*').eq('id', currentUser.id).single();
+            if (freshUser) {
+                currentUser = freshUser;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                await updateUIForLoggedInUser();
+            } else {
+                localStorage.removeItem('currentUser');
+                updateUIForLoggedOutUser();
+            }
+        } else {
+            updateUIForLoggedOutUser();
+        }
+        
+        await loadMarketplace();
+        await loadFooterInfo();
+        await loadStats();
+        
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active-admin-tab'));
+                btn.classList.add('active-admin-tab');
+                document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active-tab-content'));
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active-tab-content');
+                await loadAdminData();
+                if (btn.dataset.tab === 'locations') renderLocations();
+                if (btn.dataset.tab === 'schools') renderSchools();
+                if (btn.dataset.tab === 'categories') renderCategories();
+            });
+        });
+        
+        setupStarRatings();
+        
+    } catch (error) {
+        console.error('Init error:', error);
+        showToast('Error connecting to database', true);
+    }
+});
+
+async function initializeDatabase() {
+    try {
+        await supabaseClient.rpc('exec_sql', { query: `
+            ALTER TABLE schools ADD COLUMN IF NOT EXISTS address TEXT;
+            ALTER TABLE schools ADD COLUMN IF NOT EXISTS website TEXT;
+            ALTER TABLE schools ADD COLUMN IF NOT EXISTS email TEXT;
+            ALTER TABLE schools ADD COLUMN IF NOT EXISTS phone TEXT;
+            CREATE TABLE IF NOT EXISTS school_ratings (id SERIAL PRIMARY KEY, school_id INTEGER, user_id INTEGER, rating INTEGER, review TEXT, created_at TIMESTAMP DEFAULT NOW());
+        ` }).catch(e => console.log('Table alter skipped'));
+    } catch(e) {}
+}
+
+async function loadMasterData() {
+    try {
+        const { data: locs } = await supabaseClient.from('locations').select('*').order('name');
+        locations = locs || [];
+        const { data: schs } = await supabaseClient.from('schools').select('*').order('name');
+        schools = schs || [];
+        const { data: cats } = await supabaseClient.from('categories').select('*').order('name');
+        categories = cats || [];
+    } catch(e) { console.log('Load master data error:', e); }
+}
+
+async function loadConfig() {
+    try {
+        const { data } = await supabaseClient.from('app_config').select('*').eq('id', 1).single();
+        if (data) { appConfig = { ...appConfig, ...data }; if (appConfig.app_name) document.getElementById('nav-app-name').innerText = appConfig.app_name; if (appConfig.logo) document.getElementById('app-logo-img').src = appConfig.logo; }
+    } catch(e) {}
+}
+
+async function loadSubscriptionPlan() {
+    try { const { data } = await supabaseClient.from('subscription_plan').select('*').eq('id', 1).single(); if (data) subscriptionPlan = data; } catch(e) {}
+}
+
+async function loadStats() {
+    try {
+        const { count: booksCount } = await supabaseClient.from('books').select('*', { count: 'exact', head: true }).eq('status', 'Available');
+        const { count: usersCount } = await supabaseClient.from('users').select('*', { count: 'exact', head: true }).neq('is_admin', true);
+        document.getElementById('total-books-count').innerText = booksCount || 0;
+        document.getElementById('total-users-count').innerText = usersCount || 0;
+        document.getElementById('total-schools-count').innerText = schools.filter(s => s.is_active !== false).length;
+    } catch(e) {}
+}
+
+async function loadFooterInfo() {
+    try { const { data } = await supabaseClient.from('app_config').select('*').eq('id', 1).single(); if (data) { document.getElementById('footer-info').innerHTML = `<strong>📞 Support:</strong> ${data.support_phone || 'N/A'} | <strong>✉️ Email:</strong> ${data.support_email || 'N/A'} | <strong>📍 Address:</strong> ${data.support_address || 'N/A'}`; } } catch(e) {}
+}
+
+function updateDropdowns() {
+    const activeLocations = locations.filter(l => l.is_active !== false);
+    const activeSchools = schools.filter(s => s.is_active !== false);
+    const activeCategories = categories.filter(c => c.is_active !== false);
+    
+    const locOptions = '<option value="">All Locations</option>' + activeLocations.map(l => `<option value="${escapeHtml(l.name)}">${escapeHtml(l.name)}</option>`).join('');
+    const schoolOptions = '<option value="">All Schools</option>' + activeSchools.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+    const catOptions = '<option value="">All Categories</option>' + activeCategories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+    
+    ['filterLocation', 'postLocation', 'modal-regLocation', 'newSchoolLocation'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = locOptions;
+    });
+    ['filterSchool', 'postSchool', 'modal-regSchool'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = schoolOptions;
+    });
+    ['filterCategory', 'postCategory'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = catOptions;
+    });
+}
+
+function showToast(message, isError = false) {
+    const toast = document.createElement('div'); toast.className = 'toast'; toast.style.background = isError ? '#c0392b' : '#27ae60'; toast.innerText = message;
+    document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000);
+}
+
+// ========== NEARBY SCHOOLS FEATURE ==========
+// ========== NEARBY SCHOOLS FEATURE WITH RATINGS DISPLAY ==========
+async function showNearbySchools() {
+    const modal = document.getElementById('nearby-schools-modal');
+    modal.style.display = 'flex';
+    
+    const container = document.getElementById('nearby-schools-list');
+    container.innerHTML = '<div class="loading">Loading schools...</div>';
+    
+    // Get all active schools with their ratings
+    const activeSchools = schools.filter(s => s.is_active !== false);
+    
+    if (activeSchools.length === 0) {
+        container.innerHTML = '<p>No schools found.</p>';
+        return;
+    }
+    
+    // Fetch all ratings for each school
+    const schoolsWithRatings = [];
+    for (const school of activeSchools) {
+        // Get all ratings for this school
+        const { data: ratings } = await supabaseClient
+            .from('school_ratings')
+            .select('*, users!user_id(name)')
+            .eq('school_id', school.id)
+            .order('created_at', { ascending: false });
+        
+        // Calculate average rating
+        let avgRating = school.avg_rating || 0;
+        if (ratings && ratings.length > 0) {
+            avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+        }
+        
+        schoolsWithRatings.push({
+            ...school,
+            ratings: ratings || [],
+            avg_rating: avgRating
+        });
+    }
+    
+    // Sort by average rating (highest first)
+    schoolsWithRatings.sort((a, b) => b.avg_rating - a.avg_rating);
+    
+    container.innerHTML = schoolsWithRatings.map(school => {
+        const avgRating = school.avg_rating || 0;
+        const fullStars = Math.floor(avgRating);
+        const emptyStars = 5 - fullStars;
+        const starRating = '★'.repeat(fullStars) + '☆'.repeat(emptyStars);
+        
+        return `
+            <div class="school-card" style="margin-bottom: 20px;">
+                <h3>🏫 ${escapeHtml(school.name)}</h3>
+                <div class="school-rating" style="font-size: 1.2rem; color: var(--gold);">
+                    ${starRating} (${avgRating.toFixed(1)} / 5)
+                </div>
+                <div class="school-contact">📍 ${escapeHtml(school.address || 'Address not available')}</div>
+                <div class="school-contact">📞 ${escapeHtml(school.phone || 'Contact not available')}</div>
+                <div class="school-contact">✉️ ${escapeHtml(school.email || 'Email not available')}</div>
+                <div class="school-contact">🌐 ${school.website ? `<a href="${school.website}" target="_blank">${escapeHtml(school.website)}</a>` : 'Website not available'}</div>
+                
+                <!-- Display all ratings and comments -->
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <h4>⭐ User Reviews (${school.ratings.length})</h4>
+                    <div id="reviews-${school.id}" style="max-height: 300px; overflow-y: auto;">
+                        ${school.ratings.length > 0 ? school.ratings.map(rating => `
+                            <div style="background: #f9f9f9; padding: 10px; margin: 10px 0; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong style="color: var(--gold);">${'★'.repeat(rating.rating)}${'☆'.repeat(5-rating.rating)}</strong>
+                                    <span style="font-size: 0.75rem; color: #888;">${new Date(rating.created_at).toLocaleDateString()}</span>
+                                </div>
+                                <div style="margin: 5px 0;"><strong>${escapeHtml(rating.users?.name || 'Anonymous')}</strong></div>
+                                <div style="color: #555;">${escapeHtml(rating.review || 'No comment provided')}</div>
+                            </div>
+                        `).join('') : '<p style="color: #888; text-align: center;">No reviews yet. Be the first to rate!</p>'}
+                    </div>
+                </div>
+                
+                ${currentUser ? 
+                    `<button onclick="window.rateSchool(${school.id}, '${escapeHtml(school.name)}')" style="margin-top: 15px; background: var(--accent);">⭐ Rate this School</button>` : 
+                    `<button onclick="window.showLoginModal()" style="margin-top: 15px; background: var(--gold); color: #2c3e50;">🔐 Login to Rate</button>`
+                }
+            </div>
+        `;
+    }).join('');
+}
+// ========== NEARBY SCHOOLS FEATURE ==========
+function closeNearbySchoolsModal() {
+    document.getElementById('nearby-schools-modal').style.display = 'none';
+}
+
+function rateSchool(schoolId, schoolName) {
+    if (!currentUser) {
+        showToast('Please login to rate schools', true);
+        showLoginModal();
+        return;
+    }
+    
+    document.getElementById('rating-school-id').value = schoolId;
+    document.getElementById('school-name-display').innerHTML = schoolName;
+    document.getElementById('rating-modal').style.display = 'flex';
+    selectedRating = 0;
+    updateStarDisplay(0);
+    document.getElementById('rating-review').value = '';
+}
+
+function closeRatingModal() {
+    document.getElementById('rating-modal').style.display = 'none';
+}
+
+function setupStarRatings() {
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            updateStarDisplay(selectedRating);
+        });
+    });
+}
+
+function updateStarDisplay(rating) {
+    document.querySelectorAll('.star').forEach(star => {
+        const starRating = parseInt(star.dataset.rating);
+        if (starRating <= rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+
+async function submitSchoolRating() {
+    if (selectedRating === 0) {
+        showToast('Please select a rating', true);
+        return;
+    }
+    
+    const schoolId = document.getElementById('rating-school-id').value;
+    const review = document.getElementById('rating-review').value;
+    
+    const { error } = await supabaseClient.from('school_ratings').insert([{
+        school_id: parseInt(schoolId),
+        user_id: currentUser.id,
+        rating: selectedRating,
+        review: review
+    }]);
+    
+    if (error) {
+        showToast('Error submitting rating: ' + error.message, true);
+    } else {
+        showToast('Thank you for rating this school!');
+        closeRatingModal();
+        await updateSchoolAverageRating(schoolId);
+        await showNearbySchools();
+    }
+}
+
+async function updateSchoolAverageRating(schoolId) {
+    const { data: ratings } = await supabaseClient.from('school_ratings').select('rating').eq('school_id', schoolId);
+    if (ratings && ratings.length > 0) {
+        const avg = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+        await supabaseClient.from('schools').update({ avg_rating: avg }).eq('id', schoolId);
+        await loadMasterData();
+    }
+}
+
+// ========== AUTH & SESSION MANAGEMENT ==========
+function showLoginModal() { document.getElementById('login-modal').style.display = 'flex'; resetModalToLogin(); }
+function closeLoginModal() { document.getElementById('login-modal').style.display = 'none'; resetModalToLogin(); }
+function showAdminLogin() { closeLoginModal(); document.getElementById('admin-login-modal').style.display = 'flex'; }
+function closeAdminLoginModal() { document.getElementById('admin-login-modal').style.display = 'none'; }
+
+// async function processAdminLogin() {
+//     const username = document.getElementById('admin-username').value.trim();
+//     const password = document.getElementById('admin-password').value;
+//     if (username === 'admin' && password === 'admin123') {
+//         localStorage.setItem('_adminSession', 'true'); localStorage.removeItem('currentUser'); currentUser = null;
+//         closeAdminLoginModal(); showPage('admin-page'); await loadAdminData(); showToast('Welcome Admin!');
+//     } else { showToast('Invalid admin credentials. Use: admin / admin123', true); }
+// }
+async function processAdminLogin() {
+    const u = document.getElementById('admin-username').value;
+    const p = document.getElementById('admin-password').value;
+    
+    // Call secure backend API (never do password check on client!)
+    const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+    });
+    // ... handle response
+}
+
+
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.getElementById(pageId).classList.add('active-page');
+    if (pageId === 'admin-page') {
+        document.getElementById('user-tools').style.display = 'none'; document.getElementById('login-nav-btn').style.display = 'none';
+        document.getElementById('admin-nav-tools').style.display = 'flex'; document.getElementById('hero-section').style.display = 'none';
+    } else if (pageId === 'market-page' && currentUser) {
+        document.getElementById('user-tools').style.display = 'flex'; document.getElementById('login-nav-btn').style.display = 'none';
+        document.getElementById('admin-nav-tools').style.display = 'none'; document.getElementById('hero-section').style.display = 'none';
+    } else if (pageId === 'market-page') {
+        document.getElementById('user-tools').style.display = 'none'; document.getElementById('login-nav-btn').style.display = 'flex';
+        document.getElementById('admin-nav-tools').style.display = 'none'; document.getElementById('hero-section').style.display = 'block';
+    }
+}
+
+function resetModalToLogin() {
+    authMode = 'login'; document.getElementById('modal-auth-title').innerText = '🔐 Login';
+    document.getElementById('modal-reg-fields').style.display = 'none'; document.getElementById('modal-resetSection').style.display = 'none';
+    document.getElementById('modal-auth-link').innerText = 'Create Account'; document.getElementById('modal-auth-btn').innerText = 'Login';
+    document.getElementById('modal-username').value = ''; document.getElementById('modal-password').value = '';
+    document.getElementById('modal-regOtpSection').style.display = 'none'; document.getElementById('modal-resetOtpSection').style.display = 'none';
+}
+
+function toggleModalAuthMode() {
+    if (document.getElementById('modal-resetSection').style.display === 'block') {
+        document.getElementById('modal-resetSection').style.display = 'none'; document.getElementById('modal-reg-fields').style.display = 'none';
+        authMode = 'login'; document.getElementById('modal-auth-title').innerText = '🔐 Login'; document.getElementById('modal-auth-btn').innerText = 'Login';
+        document.getElementById('modal-auth-link').innerText = 'Create Account'; return;
+    }
+    authMode = authMode === 'login' ? 'register' : 'login';
+    document.getElementById('modal-auth-title').innerText = authMode === 'register' ? '📝 Create Account' : '🔐 Login';
+    document.getElementById('modal-reg-fields').style.display = authMode === 'register' ? 'block' : 'none';
+    document.getElementById('modal-auth-link').innerText = authMode === 'register' ? '← Back to Login' : 'Create Account';
+    document.getElementById('modal-auth-btn').innerText = authMode === 'register' ? 'Send Verification Code' : 'Login';
+}
+
+function showModalResetPassword() {
+    document.getElementById('modal-reg-fields').style.display = 'none'; document.getElementById('modal-resetSection').style.display = 'block';
+    document.getElementById('modal-auth-title').innerText = '🔑 Reset Password'; document.getElementById('modal-auth-link').style.display = 'none';
+    document.getElementById('modal-auth-btn').style.display = 'none';
+}
+
+async function processModalAuth() {
+    if (!supabaseClient) return;
+    const username = document.getElementById('modal-username').value.trim();
+    const password = document.getElementById('modal-password').value;
+    
+    if (authMode === 'login') {
+        const { data, error } = await supabaseClient.from('users').select('*').or(`name.eq.${username},email.eq.${username}`).eq('password', password).single();
+        if (data && !error) { 
+            if (data.is_admin) { showToast('Use Admin Login button', true); return; } 
+            currentUser = data; 
+            localStorage.setItem('currentUser', JSON.stringify(currentUser)); 
+            closeLoginModal(); 
+            await updateUIForLoggedInUser(); 
+            showToast(`Welcome back, ${currentUser.name}!`); 
+            await loadMarketplace(); 
+        } else { showToast('Invalid credentials. Try: demo_user / demo123', true); }
+    } else if (authMode === 'register') {
+        const fullName = document.getElementById('modal-regFullName').value; const mobile = document.getElementById('modal-regMobile').value;
+        const email = document.getElementById('modal-regEmail').value; const regPassword = document.getElementById('modal-regPassword').value;
+        const location = document.getElementById('modal-regLocation').value; const school = document.getElementById('modal-regSchool').value;
+        if (!fullName || !email || !regPassword || !location) { showToast('Please fill all required fields', true); return; }
+        const { data: existing } = await supabaseClient.from('users').select('email').eq('email', email).single();
+        if (existing) { showToast('Email already registered', true); return; }
+        pendingRegistration = { fullName, mobile, email, password: regPassword, location, school };
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await supabaseClient.from('otp_codes').upsert({ email, otp, purpose: 'registration', expires_at: new Date(Date.now() + 10 * 60000) });
+        showToast(`Demo OTP: ${otp}`, false); console.log(`📧 Verification OTP for ${email}: ${otp}`);
+        document.getElementById('modal-regOtpSection').style.display = 'block'; showToast('Verification code sent!');
+    }
+}
+
+async function verifyEmailOtp() {
+    const otp = document.getElementById('modal-regOtp').value;
+    if (!pendingRegistration || !otp) { showToast('Please enter the OTP', true); return; }
+    const { data: validOTP } = await supabaseClient.from('otp_codes').select('*').eq('email', pendingRegistration.email).eq('otp', otp).eq('purpose', 'registration').gt('expires_at', new Date()).single();
+    if (!validOTP) { showToast('Invalid or expired OTP', true); return; }
+    const { error } = await supabaseClient.from('users').insert([{ name: pendingRegistration.fullName, password: pendingRegistration.password, mobile: pendingRegistration.mobile, email: pendingRegistration.email, location: pendingRegistration.location, school: pendingRegistration.school, email_verified: true, created_at: new Date() }]);
+    if (error) showToast('Error: ' + error.message, true);
+    else { await supabaseClient.from('otp_codes').delete().eq('email', pendingRegistration.email); showToast('Account created successfully! Please login.'); closeLoginModal(); resetModalToLogin(); pendingRegistration = null; }
+}
+
+async function sendResetOtp() {
+    const email = document.getElementById('modal-resetEmail').value;
+    if (!email) { showToast('Please enter your email', true); return; }
+    const { data: user } = await supabaseClient.from('users').select('email').eq('email', email).single();
+    if (!user) { showToast('Email not found', true); return; }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await supabaseClient.from('otp_codes').upsert({ email, otp, purpose: 'password_reset', expires_at: new Date(Date.now() + 10 * 60000) });
+    showToast(`Demo OTP: ${otp}`, false); console.log(`📧 Password reset OTP for ${email}: ${otp}`);
+    pendingReset = { email }; document.getElementById('modal-resetOtpSection').style.display = 'block'; document.getElementById('modal-sendResetBtn').style.display = 'none';
+}
+
+async function completePasswordReset() {
+    const otp = document.getElementById('modal-resetOtp').value; const newPassword = document.getElementById('modal-newPassword').value;
+    if (!otp || !newPassword) { showToast('Please enter OTP and new password', true); return; }
+    const { data: validOTP } = await supabaseClient.from('otp_codes').select('*').eq('email', pendingReset.email).eq('otp', otp).eq('purpose', 'password_reset').gt('expires_at', new Date()).single();
+    if (!validOTP) { showToast('Invalid or expired OTP', true); return; }
+    await supabaseClient.from('users').update({ password: newPassword }).eq('email', pendingReset.email);
+    await supabaseClient.from('otp_codes').delete().eq('email', pendingReset.email);
+    showToast('Password reset successfully! Please login.'); closeLoginModal();
+}
+
+// ========== SUBSCRIPTION MANAGEMENT ==========
+function hasActiveSubscription() {
+    if (!currentUser) return false;
+    if (currentUser.is_admin) return true;
+    if (!currentUser.subscription_expiry) return false;
+    return new Date(currentUser.subscription_expiry) > new Date();
+}
+
+function updateSubscriptionUI() {
+    const active = hasActiveSubscription();
+    const badge = document.getElementById('sub-status-badge');
+    if (active) {
+        if (currentUser.subscription_expiry && !currentUser.is_admin) {
+            const days = Math.ceil((new Date(currentUser.subscription_expiry) - new Date()) / (1000 * 3600 * 24));
+            badge.innerHTML = `✅ Active (${days} days left)`;
+        } else if (currentUser.is_admin) {
+            badge.innerHTML = `👑 Admin`;
+        } else {
+            badge.innerHTML = `✅ Active`;
+        }
+    } else {
+        badge.innerHTML = `⚠️ No Plan | <button onclick="window.showSubscribeModal()" style="background:var(--gold); color:#000; padding:2px 8px; width:auto; margin-left:5px;">Subscribe ₹${subscriptionPlan?.price || 199}</button>`;
+    }
+}
+
+function showSubscribeModal() {
+    const price = subscriptionPlan?.price || 199;
+    const days = subscriptionPlan?.validity_days || 30;
+    const modal = document.createElement('div'); modal.className = 'modal';
+    modal.innerHTML = `<div class="modal-card"><h3>💰 Subscribe to Continue Selling</h3><p style="font-size:28px;font-weight:bold;color:var(--accent);">₹${price}</p><p>For ${days} days subscription</p><p><strong>UPI ID:</strong> ${appConfig.upi_id}</p><button onclick="window.activateSubscription(${days})">✅ Activate Subscription (Demo)</button><button onclick="this.closest('.modal').remove()">Cancel</button></div>`;
+    document.body.appendChild(modal);
+}
+
+async function activateSubscription(days) {
+    const expiry = new Date(); expiry.setDate(expiry.getDate() + days);
+    const { error } = await supabaseClient.from('users').update({ subscription_expiry: expiry.toISOString() }).eq('id', currentUser.id);
+    if (!error) {
+        currentUser.subscription_expiry = expiry.toISOString();
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        updateSubscriptionUI();
+        showToast(`✅ Subscribed! Active until ${expiry.toLocaleDateString()}`);
+        document.querySelector('.modal')?.remove();
+        if (document.getElementById('section-sell').style.display === 'block') await loadMyBooks();
+    } else { showToast('Error: ' + error.message, true); }
+}
+
+// ========== UI UPDATE FUNCTIONS ==========
+async function updateUIForLoggedInUser() {
+    document.getElementById('user-tools').style.display = 'flex';
+    document.getElementById('login-nav-btn').style.display = 'none';
+    document.getElementById('hero-section').style.display = 'none';
+    document.getElementById('nav-user-name').innerText = currentUser.name;
+    
+    document.getElementById('sell-tab').classList.remove('disabled-tab');
+    document.getElementById('requests-tab').classList.remove('disabled-tab');
+    document.getElementById('sell-tab').style.pointerEvents = 'auto';
+    document.getElementById('requests-tab').style.pointerEvents = 'auto';
+    document.getElementById('sell-tab').style.opacity = '1';
+    document.getElementById('requests-tab').style.opacity = '1';
+    
+    updateSubscriptionUI();
+    await loadMyBooks();
+    await loadRequests();
+}
+
+function updateUIForLoggedOutUser() {
+    document.getElementById('user-tools').style.display = 'none';
+    document.getElementById('login-nav-btn').style.display = 'flex';
+    document.getElementById('hero-section').style.display = 'block';
+    
+    document.getElementById('sell-tab').classList.add('disabled-tab');
+    document.getElementById('requests-tab').classList.add('disabled-tab');
+    document.getElementById('sell-tab').style.pointerEvents = 'none';
+    document.getElementById('requests-tab').style.pointerEvents = 'none';
+    document.getElementById('sell-tab').style.opacity = '0.5';
+    document.getElementById('requests-tab').style.opacity = '0.5';
+    
+    document.getElementById('section-sell').style.display = 'none';
+    document.getElementById('section-requests').style.display = 'none';
+    document.getElementById('section-buy').style.display = 'block';
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+    document.querySelector('.tab').classList.add('active-tab');
+}
+
+// ========== TAB SWITCHING ==========
+async function switchTab(tab) {
+    if (!currentUser && (tab === 'sell' || tab === 'requests')) {
+        showToast('Please login to access this feature', true);
+        showLoginModal();
+        return;
+    }
+    
+    if (tab === 'sell' && currentUser && !currentUser.is_admin && !hasActiveSubscription()) {
+        showSubscribeModal();
+        return;
+    }
+    
+    if (tab === 'nearby') {
+        showNearbySchools();
+        return;
+    }
+    
+    ['buy', 'sell', 'requests'].forEach(t => {
+        const section = document.getElementById('section-' + t);
+        if (section) section.style.display = t === tab ? 'block' : 'none';
+    });
+    
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+    const tabs = document.querySelectorAll('.tab');
+    const tabMap = { buy: 0, sell: 1, requests: 2 };
+    if (tabs[tabMap[tab]]) tabs[tabMap[tab]].classList.add('active-tab');
+    
+    if (tab === 'sell' && currentUser) await loadMyBooks();
+    if (tab === 'requests' && currentUser) await loadRequests();
+}
+
+// ========== MARKETPLACE FUNCTIONS ==========
+async function loadMarketplace(filters = {}) {
+    if (!supabaseClient) return;
+    let query = supabaseClient.from('books').select('*').eq('status', 'Available');
+    if (filters.location && filters.location !== '') query = query.eq('location', filters.location);
+    if (filters.school && filters.school !== '') query = query.eq('school', filters.school);
+    if (filters.category && filters.category !== '') query = query.eq('category', filters.category);
+    if (filters.class && filters.class !== '') query = query.ilike('class_standard', `%${filters.class}%`);
+    if (filters.title && filters.title !== '') query = query.ilike('title', `%${filters.title}%`);
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (!error && data) {
+        const container = document.getElementById('book-display');
+        if (data.length === 0) { container.innerHTML = '<div class="card">📚 No books available.</div>'; return; }
+        
+        container.innerHTML = data.map(book => {
+            const isOwnBook = currentUser && book.seller === currentUser.name;
+            return `<div class="card book-card">
+                ${isOwnBook ? '<div class="own-book-badge" style="position:absolute;top:10px;right:10px;background:var(--warning);color:#000;padding:4px 8px;border-radius:20px;font-size:0.7rem;">📌 Your Book</div>' : ''}
+                ${book.image ? `<img src="${book.image}" alt="${escapeHtml(book.title)}">` : '<div style="height:180px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:white;font-size:3rem;">📖</div>'}
+                <h4>${escapeHtml(book.title)}</h4>
+                <div>${book.category} | Class ${book.class_standard}</div>
+                <div style="font-size:1.2rem;font-weight:bold;color:var(--accent);">₹${book.price}</div>
+                <div style="font-size:0.75rem;color:#888;margin:5px 0;">👤 Seller: ${escapeHtml(book.seller)}</div>
+                ${isOwnBook ? 
+                    `<button disabled style="background:#ccc; cursor:not-allowed;" title="You cannot request your own book">🚫 Your Book</button>` : 
+                    `<button onclick="window.sendRequest(${book.id}, '${escapeHtml(book.title)}', '${escapeHtml(book.seller)}', ${book.price})">📞 Contact Seller</button>`
+                }
+            </div>`;
+        }).join('');
+    }
+}
+
+function applyFilters() { loadMarketplace({ location: document.getElementById('filterLocation').value, school: document.getElementById('filterSchool').value, category: document.getElementById('filterCategory').value, class: document.getElementById('filterClass').value, title: document.getElementById('filterTitle').value }); }
+
+async function sendRequest(bookId, bookTitle, sellerName, price) {
+    if (!currentUser) { showToast('Please login to contact seller', true); showLoginModal(); return; }
+    
+    if (currentUser.name === sellerName) {
+        showToast('❌ You cannot send a request for your own book!', true);
+        return;
+    }
+    
+    if (!hasActiveSubscription() && !currentUser.is_admin) { showSubscribeModal(); return; }
+    
+    const { data: existing } = await supabaseClient.from('requests').select('*').eq('book_id', bookId).eq('buyer_name', currentUser.name).eq('status', 'pending');
+    if (existing && existing.length > 0) { showToast('You already have a pending request for this book', true); return; }
+    
+    await supabaseClient.from('requests').insert([{ book_id: bookId, book_title: bookTitle, seller_name: sellerName, buyer_name: currentUser.name, buyer_contact: currentUser.mobile || currentUser.email, buyer_email: currentUser.email, price: price, status: 'pending' }]);
+    showToast('Request sent to seller!');
+    if (currentUser && document.getElementById('section-requests').style.display === 'block') await loadRequests();
+}
+
+async function uploadBook() {
+    if (!currentUser) { showToast('Please login first', true); return; }
+    if (!hasActiveSubscription() && !currentUser.is_admin) { showSubscribeModal(); return; }
+    
+    const title = document.getElementById('postTitle').value; const classStd = document.getElementById('postClass').value; const category = document.getElementById('postCategory').value; const price = parseInt(document.getElementById('postPrice').value); const location = document.getElementById('postLocation').value; const school = document.getElementById('postSchool').value; const imageFile = document.getElementById('postImg').files[0];
+    if (!title || !price || !location || !school || !classStd) { showToast('Please fill all fields', true); return; }
+    
+    let imageBase64 = null; if (imageFile) { imageBase64 = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = (e) => resolve(e.target.result); reader.readAsDataURL(imageFile); }); }
+    
+    const { error } = await supabaseClient.from('books').insert([{ title, class_standard: classStd, category, price, location, school, seller: currentUser.name, seller_contact: currentUser.mobile || currentUser.email, image: imageBase64, status: 'Available' }]);
+    if (error) showToast('Error: ' + error.message, true);
+    else { showToast('Book posted!'); document.getElementById('postTitle').value = ''; document.getElementById('postClass').value = ''; document.getElementById('postPrice').value = ''; document.getElementById('postImg').value = ''; await loadMarketplace(); await loadMyBooks(); }
+}
+
+async function loadMyBooks() {
+    if (!currentUser || !supabaseClient) return;
+    const { data, error } = await supabaseClient.from('books').select('*').eq('seller', currentUser.name).eq('status', 'Available');
+    if (!error && data) { const container = document.getElementById('my-active-listings'); if (data.length === 0) { container.innerHTML = '<p>No active listings.</p>'; return; } container.innerHTML = data.map(book => `<div class="flex-row"><div><strong>${escapeHtml(book.title)}</strong> - ₹${book.price}</div><button onclick="window.markSold(${book.id})" class="btn-small" style="background: var(--sold);">✓ Mark Sold</button></div>`).join(''); }
+}
+
+async function markSold(bookId) { await supabaseClient.from('books').update({ status: 'Sold' }).eq('id', bookId); showToast('Marked as sold!'); await loadMyBooks(); await loadMarketplace(); }
+
+async function loadRequests() {
+    if (!currentUser || !supabaseClient) return;
+    const { data: incoming } = await supabaseClient.from('requests').select('*').eq('seller_name', currentUser.name).order('created_at', { ascending: false });
+    const incomingContainer = document.getElementById('incoming-requests');
+    if (incoming && incoming.length > 0) { incomingContainer.innerHTML = incoming.map(req => `<div class="card"><b>📖 ${escapeHtml(req.book_title)}</b><br>👤 Buyer: ${escapeHtml(req.buyer_name)}<br>📞 Contact: ${escapeHtml(req.buyer_contact)}<br>Status: <span class="badge ${req.status === 'approved' ? 'badge-active' : req.status === 'pending' ? 'badge-pending' : 'badge-inactive'}">${req.status}</span>${req.status === 'pending' ? `<div class="flex-row" style="margin-top:10px;"><button onclick="window.handleRequest(${req.id}, 'approved')">✅ Approve</button><button onclick="window.handleRequest(${req.id}, 'declined')" style="background:var(--danger);">❌ Decline</button></div>` : ''}</div>`).join(''); }
+    else incomingContainer.innerHTML = '<p>No incoming requests</p>';
+    
+    const { data: outgoing } = await supabaseClient.from('requests').select('*').eq('buyer_name', currentUser.name).order('created_at', { ascending: false });
+    const outboxContainer = document.getElementById('outbox');
+    if (outgoing && outgoing.length > 0) { outboxContainer.innerHTML = outgoing.map(req => `<div class="card"><b>📖 ${escapeHtml(req.book_title)}</b><br>👤 Seller: ${escapeHtml(req.seller_name)}<br>Status: <span class="badge ${req.status === 'approved' ? 'badge-active' : req.status === 'pending' ? 'badge-pending' : 'badge-inactive'}">${req.status}</span>${req.status === 'approved' ? `<button onclick="window.rateUser(${req.id}, '${escapeHtml(req.seller_name)}')" style="margin-top:10px;">⭐ Rate Seller</button>` : ''}</div>`).join(''); }
+    else outboxContainer.innerHTML = '<p>No sent requests</p>';
+    
+    const { data: reviews } = await supabaseClient.from('reviews').select('*').eq('reviewee_name', currentUser.name);
+    const reviewsDiv = document.getElementById('reviews-section');
+    if (reviews && reviews.length > 0) { reviewsDiv.innerHTML = reviews.map(r => `<div style="border-bottom:1px solid #eee;padding:10px;"><strong>⭐ ${r.rating}/5</strong> from ${r.reviewer_name}<br>${r.comment ? `"${escapeHtml(r.comment)}"` : ''}</div>`).join(''); }
+    else reviewsDiv.innerHTML = '<p>No reviews yet</p>';
+}
+
+async function handleRequest(requestId, newStatus) { await supabaseClient.from('requests').update({ status: newStatus }).eq('id', requestId); showToast(`Request ${newStatus}!`); await loadRequests(); }
+
+async function rateUser(requestId, revieweeName) { const rating = prompt('Rate 1-5:', '5'); if (!rating) return; const comment = prompt('Comment:', ''); await supabaseClient.from('reviews').insert([{ request_id: requestId, reviewer_name: currentUser.name, reviewee_name: revieweeName, rating: parseInt(rating), comment: comment || '' }]); showToast('Review submitted!'); await loadRequests(); }
+
+// ========== ADMIN FUNCTIONS ==========
+async function loadAdminData() {
+    if (!supabaseClient) return;
+    const { data: users } = await supabaseClient.from('users').select('*');
+    document.getElementById('usersTableContainer').innerHTML = `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Subscription</th></tr></thead><tbody>${users.map(u => `<tr><td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.email || '-')}</td><td>${escapeHtml(u.mobile || '-')}</td><td>${u.subscription_expiry && new Date(u.subscription_expiry) > new Date() ? 'Active' : 'Inactive'}</td></tr>`).join('')}</tbody></table></div>`;
+    const { data: books } = await supabaseClient.from('books').select('*');
+    document.getElementById('adminBooksTableContainer').innerHTML = `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Title</th><th>Seller</th><th>Price</th><th>Status</th></tr></thead><tbody>${books.map(b => `<tr><td>${escapeHtml(b.title)}</td><td>${escapeHtml(b.seller)}</td><td>₹${b.price}</td><td>${b.status}</td></tr>`).join('')}</tbody></table></div>`;
+    const { data: requests } = await supabaseClient.from('requests').select('*');
+    document.getElementById('adminRequestsTableContainer').innerHTML = `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Book</th><th>Buyer</th><th>Seller</th><th>Status</th></tr></thead><tbody>${requests.map(r => `<tr><td>${escapeHtml(r.book_title)}</td><td>${escapeHtml(r.buyer_name)}</td><td>${escapeHtml(r.seller_name)}</td><td>${r.status}</td></tr>`).join('')}</tbody></table></div>`;
+    document.getElementById('currentPlan').innerHTML = `<p>💰 Current: ₹${subscriptionPlan?.price || 199} for ${subscriptionPlan?.validity_days || 30} days</p>`;
+    document.getElementById('admin-total-books').innerText = books.length;
+    document.getElementById('admin-total-users').innerText = users.filter(u => !u.is_admin).length;
+    document.getElementById('admin-total-requests').innerText = requests.length;
+    document.getElementById('admin-active-locations').innerText = locations.filter(l => l.is_active !== false).length;
+    document.getElementById('admin-active-schools').innerText = schools.filter(s => s.is_active !== false).length;
+    document.getElementById('admin-active-categories').innerText = categories.filter(c => c.is_active !== false).length;
+}
+
+async function updateSubscription() { const price = parseInt(document.getElementById('adminSubPrice').value); const days = parseInt(document.getElementById('adminSubDays').value); if (!price || !days) return showToast('Enter valid numbers', true); await supabaseClient.from('subscription_plan').update({ price, validity_days: days }).eq('id', 1); showToast('Subscription plan updated!'); await loadSubscriptionPlan(); }
+
+async function saveEmailConfig() { const smtpEmail = document.getElementById('smtpEmail').value; const smtpPassword = document.getElementById('smtpPassword').value; await supabaseClient.from('app_config').update({ smtp_email: smtpEmail, smtp_password: smtpPassword }).eq('id', 1); showToast('Email settings saved!'); document.getElementById('emailConfigStatus').innerHTML = '<div class="success-message">✅ Email settings saved!</div>'; }
+
+async function saveBranding() { const updates = { app_name: document.getElementById('setAppName').value, support_phone: document.getElementById('setSupportPhone').value, support_email: document.getElementById('setSupportEmail').value, support_address: document.getElementById('setAddress').value, upi_id: document.getElementById('setUpiId').value }; const logoFile = document.getElementById('uploadLogoFile').files[0]; if (logoFile) { updates.logo = await new Promise(resolve => { const reader = new FileReader(); reader.onload = e => resolve(e.target.result); reader.readAsDataURL(logoFile); }); } await supabaseClient.from('app_config').update(updates).eq('id', 1); showToast('Branding saved!'); await loadConfig(); await loadFooterInfo(); }
+
+// ========== LOCATION MANAGEMENT ==========
+async function addLocation() { const name = document.getElementById('newLocationName').value.trim(); if (!name) { showToast('Enter location name', true); return; } const { error } = await supabaseClient.from('locations').insert([{ name, is_active: true }]); if (error) showToast(error.message, true); else { showToast('Location added!'); document.getElementById('newLocationName').value = ''; await loadMasterData(); renderLocations(); updateDropdowns(); } }
+async function toggleLocationStatus(id, currentStatus) { await supabaseClient.from('locations').update({ is_active: !currentStatus }).eq('id', id); await loadMasterData(); renderLocations(); updateDropdowns(); showToast('Location status updated'); }
+async function deleteLocation(id) { if (confirm('Delete this location?')) { await supabaseClient.from('locations').delete().eq('id', id); await loadMasterData(); renderLocations(); updateDropdowns(); showToast('Location deleted'); } }
+async function editLocation(id, oldName) { const newName = prompt('Edit location name:', oldName); if (newName && newName !== oldName) { await supabaseClient.from('locations').update({ name: newName }).eq('id', id); await loadMasterData(); renderLocations(); updateDropdowns(); showToast('Location updated'); } }
+function renderLocations() { const container = document.getElementById('locationsList'); if (!container) return; container.innerHTML = `<table class="data-table"><thead><tr><th>Location Name</th><th>Status</th><th>Actions</th></tr></thead><tbody>${locations.map(l => `<tr><td>${escapeHtml(l.name)}</td><td><span class="status-badge ${l.is_active !== false ? 'badge-active' : 'badge-inactive'}">${l.is_active !== false ? 'Active' : 'Inactive'}</span></td><td><div class="action-buttons"><button onclick="window.editLocation(${l.id}, '${escapeHtml(l.name)}')" class="btn-small btn-edit">✏️ Edit</button><button onclick="window.toggleLocationStatus(${l.id}, ${l.is_active !== false})" class="btn-small btn-toggle">${l.is_active !== false ? '🔴 Deactivate' : '🟢 Activate'}</button><button onclick="window.deleteLocation(${l.id})" class="btn-small btn-delete">🗑️ Delete</button></div></td></tr>`).join('')}</tbody></table>`; }
+
+// ========== SCHOOL MANAGEMENT WITH DETAILS ==========
+async function addSchool() { 
+    const name = document.getElementById('newSchoolName').value.trim(); 
+    const address = document.getElementById('newSchoolAddress').value.trim();
+    const website = document.getElementById('newSchoolWebsite').value.trim();
+    const email = document.getElementById('newSchoolEmail').value.trim();
+    const phone = document.getElementById('newSchoolPhone').value.trim();
+    const location = document.getElementById('newSchoolLocation').value; 
+    if (!name || !location) { showToast('Enter school name and select location', true); return; } 
+    const { error } = await supabaseClient.from('schools').insert([{ name, address, website, email, phone, location, is_active: true }]); 
+    if (error) showToast(error.message, true); 
+    else { showToast('School added!'); document.getElementById('newSchoolName').value = ''; document.getElementById('newSchoolAddress').value = ''; document.getElementById('newSchoolWebsite').value = ''; document.getElementById('newSchoolEmail').value = ''; document.getElementById('newSchoolPhone').value = ''; await loadMasterData(); renderSchools(); updateDropdowns(); } 
+}
+
+async function toggleSchoolStatus(id, currentStatus) { await supabaseClient.from('schools').update({ is_active: !currentStatus }).eq('id', id); await loadMasterData(); renderSchools(); updateDropdowns(); showToast('School status updated'); }
+async function deleteSchool(id) { if (confirm('Delete this school?')) { await supabaseClient.from('schools').delete().eq('id', id); await loadMasterData(); renderSchools(); updateDropdowns(); showToast('School deleted'); } }
+async function editSchool(id, oldData) { 
+    const newName = prompt('Edit school name:', oldData.name); 
+    const newAddress = prompt('Edit address:', oldData.address || ''); 
+    const newWebsite = prompt('Edit website:', oldData.website || ''); 
+    const newEmail = prompt('Edit email:', oldData.email || ''); 
+    const newPhone = prompt('Edit phone:', oldData.phone || ''); 
+    const newLocation = prompt('Edit location:', oldData.location); 
+    if (newName && newLocation) { 
+        await supabaseClient.from('schools').update({ name: newName, address: newAddress, website: newWebsite, email: newEmail, phone: newPhone, location: newLocation }).eq('id', id); 
+        await loadMasterData(); renderSchools(); updateDropdowns(); showToast('School updated'); 
+    } 
+}
+
+function renderSchools() { 
+    const container = document.getElementById('schoolsList'); 
+    if (!container) return; 
+    container.innerHTML = `<table class="data-table"><thead><tr><th>School Name</th><th>Address</th><th>Contact</th><th>Email</th><th>Website</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody>${schools.map(s => `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.address || '-')}</td><td>${escapeHtml(s.phone || '-')}</td><td>${escapeHtml(s.email || '-')}</td><td>${s.website ? `<a href="${s.website}" target="_blank">Visit</a>` : '-'}</td><td>${escapeHtml(s.location)}</td><td><span class="status-badge ${s.is_active !== false ? 'badge-active' : 'badge-inactive'}">${s.is_active !== false ? 'Active' : 'Inactive'}</span></td><td><div class="action-buttons"><button onclick="window.editSchool(${s.id}, {name:'${escapeHtml(s.name)}', address:'${escapeHtml(s.address || '')}', website:'${escapeHtml(s.website || '')}', email:'${escapeHtml(s.email || '')}', phone:'${escapeHtml(s.phone || '')}', location:'${escapeHtml(s.location)}'})" class="btn-small btn-edit">✏️ Edit</button><button onclick="window.toggleSchoolStatus(${s.id}, ${s.is_active !== false})" class="btn-small btn-toggle">${s.is_active !== false ? '🔴 Deactivate' : '🟢 Activate'}</button><button onclick="window.deleteSchool(${s.id})" class="btn-small btn-delete">🗑️ Delete</button></div></td></tr>`).join('')}</tbody></table>`; 
+}
+
+// ========== CATEGORY MANAGEMENT ==========
+async function addCategory() { const name = document.getElementById('newCategoryName').value.trim(); if (!name) { showToast('Enter category name', true); return; } const { error } = await supabaseClient.from('categories').insert([{ name, is_active: true }]); if (error) showToast(error.message, true); else { showToast('Category added!'); document.getElementById('newCategoryName').value = ''; await loadMasterData(); renderCategories(); updateDropdowns(); } }
+async function toggleCategoryStatus(id, currentStatus) { await supabaseClient.from('categories').update({ is_active: !currentStatus }).eq('id', id); await loadMasterData(); renderCategories(); updateDropdowns(); showToast('Category status updated'); }
+async function deleteCategory(id) { if (confirm('Delete this category?')) { await supabaseClient.from('categories').delete().eq('id', id); await loadMasterData(); renderCategories(); updateDropdowns(); showToast('Category deleted'); } }
+async function editCategory(id, oldName) { const newName = prompt('Edit category name:', oldName); if (newName && newName !== oldName) { await supabaseClient.from('categories').update({ name: newName }).eq('id', id); await loadMasterData(); renderCategories(); updateDropdowns(); showToast('Category updated'); } }
+function renderCategories() { const container = document.getElementById('categoriesList'); if (!container) return; container.innerHTML = `<table class="data-table"><thead><tr><th>Category Name</th><th>Status</th><th>Actions</th></tr></thead><tbody>${categories.map(c => `<tr><td>${escapeHtml(c.name)}</td><td><span class="status-badge ${c.is_active !== false ? 'badge-active' : 'badge-inactive'}">${c.is_active !== false ? 'Active' : 'Inactive'}</span></td><td><div class="action-buttons"><button onclick="window.editCategory(${c.id}, '${escapeHtml(c.name)}')" class="btn-small btn-edit">✏️ Edit</button><button onclick="window.toggleCategoryStatus(${c.id}, ${c.is_active !== false})" class="btn-small btn-toggle">${c.is_active !== false ? '🔴 Deactivate' : '🟢 Activate'}</button><button onclick="window.deleteCategory(${c.id})" class="btn-small btn-delete">🗑️ Delete</button></div></td></tr>`).join('')}</tbody></table>`; }
+
+function logout() { currentUser = null; localStorage.removeItem('currentUser'); localStorage.removeItem('_adminSession'); updateUIForLoggedOutUser(); showToast('Logged out'); loadMarketplace(); }
+function adminLogout() { localStorage.removeItem('_adminSession'); currentUser = null; showToast('Admin logged out'); location.reload(); }
+function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+</script>
+</body>
+</html>
